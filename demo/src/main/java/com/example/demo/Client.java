@@ -9,8 +9,8 @@ public class Client extends User {
     public Client() {
     }
 
-    public Client(Integer id, String name, String email, String phoneNumber) {
-        super(id, name, email);
+    public Client(Integer id, String name, String email,String password, String phoneNumber) {
+        super(id, name, email,password);
         this.phoneNumber = phoneNumber;
     }
 

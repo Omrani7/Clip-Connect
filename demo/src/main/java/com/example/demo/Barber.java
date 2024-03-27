@@ -8,8 +8,8 @@ public class Barber extends User {
     public Barber() {
     }
 
-    public Barber(Integer id, String name, String email, String shopName) {
-        super(id, name, email);
+    public Barber(Integer id, String name, String email,String password, String shopName) {
+        super(id, name, email,password);
         this.shopName = shopName;
     }
 

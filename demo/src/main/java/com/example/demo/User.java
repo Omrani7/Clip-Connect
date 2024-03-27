@@ -9,18 +9,20 @@ public class User {
     private Integer id;
     private String name;
     private String email;
+   private String password;
 
     public User() {
     }
 
-    public User(Integer id, String name, String email) {
+    public User(Integer id, String name, String email,String pass) {
         this.id = id;
         this.name = name;
         this.email = email;
+        password = pass;
     }
 
 
-    public Integer getId() {
+    public Integer getUserId() {
         return id;
     }
 
@@ -28,7 +30,7 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
+    public String getUserName() {
         return name;
     }
 
@@ -36,11 +38,18 @@ public class User {
         this.name = name;
     }
 
-    public String getEmail() {
+    public String getUserEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public CharSequence getPassword() {
+    return password;}
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
