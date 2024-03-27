@@ -3,6 +3,7 @@ package com.example.demo;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "barbers")
 public class Barber extends User {
     private String shopName;
     public Barber() {

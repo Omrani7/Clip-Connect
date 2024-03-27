@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/Clip_Connect
+    username: root
+    password: azerty123456789
+  jpa:
+    hibernate:
+      ddl-auto: update

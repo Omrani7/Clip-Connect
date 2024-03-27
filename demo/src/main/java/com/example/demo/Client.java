@@ -3,9 +3,10 @@ package com.example.demo;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "clients")
 public class Client extends User {
     private String phoneNumber;
-    private String jdfh;
+
     public Client() {
     }
 

@@ -23,11 +23,24 @@ public class UserController {
                     HttpStatus.BAD_REQUEST, "Username already exists");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        // Save the user in the database
+
         return userRepository.save(user);
         }
+    @PostMapping("/login")
+    public User loginUser(@RequestBody User loginUser) {
 
+        User user = userRepository.findByUsername(loginUser.getUserName());
 
+        if (user != null && passwordEncoder.matches(loginUser.getPassword(), (String) user.getPassword())) {
+            return user;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Invalid username or password");
+        }
     }
+
+
+
+}
 
 
