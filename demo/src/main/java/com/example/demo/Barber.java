@@ -13,7 +13,16 @@ public class Barber extends User {
         super(id, name, email,password);
         this.shopName = shopName;
     }
+    @OneToOne
+    private User user;
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public String getShopName() {
         return shopName;

@@ -47,7 +47,7 @@ public class User {
         this.email = email;
     }
 
-    public CharSequence getPassword() {
+    public String getPassword() {
     return password;}
 
     public void setPassword(String password) {

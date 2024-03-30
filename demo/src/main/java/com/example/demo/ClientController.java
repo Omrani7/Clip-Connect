@@ -15,6 +15,6 @@ public class ClientController {
     }
 
     @GetMapping
-    public List<Client> getAllBarbers() {
+    public List<Client> getAllClients() {
         return clientRepository.findAll();
     }}
