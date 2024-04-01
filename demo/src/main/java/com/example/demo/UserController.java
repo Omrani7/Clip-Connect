@@ -1,5 +1,4 @@
 package com.example.demo;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,37 +20,35 @@ public class UserController {
         this.barberRepository = barberRepository;
         this.clientRepository = clientRepository;
     }
+
     @PostMapping("/register")
     public User registerUser(@RequestBody User user, @RequestParam String role){
-            if (userRepository.findByUsername(user.getUserName()) != null) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Username already exists");
-            }
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            User savedUser = userRepository.save(user);
+        if (userRepository.findByUsername(user.getUsername()) != null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Username already exists");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User savedUser = userRepository.save(user);
 
-            if (role.equals("barber")) {
-                Barber barber = new Barber();
-                barber.setUser(savedUser);
-                barberRepository.save(barber);
-            } else if (role.equals("client")) {
-                Client client = new Client();
-                client.setUser(savedUser);
-                clientRepository.save(client);
-            }
-
-            return savedUser;
+        if (role.equals("barber")) {
+            Barber barber = new Barber();
+            barber.setUser(savedUser);
+            barberRepository.save(barber);
+        } else if (role.equals("client")) {
+            Client client = new Client();
+            client.setUser(savedUser);
+            clientRepository.save(client);
         }
 
-
-
+        return savedUser;
+    }
 
     @PostMapping("/login")
     public User loginUser(@RequestBody User loginUser) {
         User user = null;
 
         try {
-            user = userRepository.findByUsername(loginUser.getUserName());
+            user = userRepository.findByUsername(loginUser.getUsername());
         } catch (Exception e) {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, "Database error occurred", e);
@@ -64,9 +61,4 @@ public class UserController {
                     HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
     }
-
-
-
 }
-
-
