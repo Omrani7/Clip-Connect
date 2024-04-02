@@ -1,4 +1,4 @@
-# Clip Connect :
+## Clip Connect :
 
 ## `Setup the proprieties in "target/classes/application.properties"`
 
