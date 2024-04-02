@@ -1,4 +1,10 @@
-package com.example.demo;
+package com.bitcode.clipconnect.Controller;
+import com.bitcode.clipconnect.Model.Barber;
+import com.bitcode.clipconnect.Model.Client;
+import com.bitcode.clipconnect.Model.User;
+import com.bitcode.clipconnect.Repository.BarberRepository;
+import com.bitcode.clipconnect.Repository.ClientRepository;
+import com.bitcode.clipconnect.Repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;

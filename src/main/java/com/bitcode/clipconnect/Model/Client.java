@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.bitcode.clipconnect.Model;
 
 import jakarta.persistence.*;
 
