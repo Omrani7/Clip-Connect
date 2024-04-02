@@ -1,4 +1,5 @@
 ## Clip Connect :
+This is an initial version of a Spring Boot backend website. We are LOADING...
 
 ## Setup the proprieties in "target/classes/application.properties" :
 
