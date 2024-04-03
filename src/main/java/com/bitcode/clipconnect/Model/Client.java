@@ -1,36 +1,19 @@
 package com.bitcode.clipconnect.Model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "clients")
+@Getter
+@Setter
 public class Client extends User {
     private String phoneNumber;
-
     public Client() {
     }
 
-    public Client(Integer id, String name, String email,String password, String phoneNumber) {
-        super(id, name, email,password);
-        this.phoneNumber = phoneNumber;
-    }
-
-    @OneToOne
-    private User user;
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public Client(User user) {
+        super(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getVerificationCode());
     }
 }
