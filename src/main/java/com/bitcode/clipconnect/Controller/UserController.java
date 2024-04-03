@@ -6,6 +6,10 @@ import com.bitcode.clipconnect.Model.User;
 import com.bitcode.clipconnect.Repository.BarberRepository;
 import com.bitcode.clipconnect.Repository.ClientRepository;
 import com.bitcode.clipconnect.Repository.UserRepository;
+import com.bitcode.clipconnect.Service.EmailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,7 +21,8 @@ import java.util.Random;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
+    @Autowired
+    private EmailService emailService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final BarberRepository barberRepository;
@@ -39,7 +44,7 @@ public class UserController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public User registerUser(@RequestBody User user, @RequestParam String role) {
-        if (userRepository.existsByUsername(user.getUsername())) {
+        if (userRepository.existsByName(user.getName())) {
             throw new RuntimeException("Username already exists");
         }
 
@@ -47,16 +52,19 @@ public class UserController {
         user.setVerificationCode(verificationCode);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        //User savedUser = userRepository.save(user);
-        //sendVerificationEmail(savedUser.getEmail(), verificationCode);
-        //saveRoleSpecificEntity(role, savedUser);
+        User savedUser = userRepository.save(user);
+        sendVerificationEmail(savedUser.getEmail(), verificationCode);
 
         if ("barber".equals(role)) {
-            Barber barber = new Barber(user);
-            return barberRepository.save(barber);
+            Barber barber = new Barber();
+
+            barber.setUser(savedUser);
+            return barberRepository.save(barber).getUser();
         } else if ("client".equals(role)) {
-            Client client = new Client(user);
-            return clientRepository.save(client);
+            Client client = new Client();
+
+            client.setUser(savedUser);
+            return clientRepository.save(client).getUser();
         } else {
             throw new RuntimeException("Invalid role");
         }
@@ -64,7 +72,7 @@ public class UserController {
 
     @PostMapping("/login")
     public User loginUser(@RequestBody User loginUser) {
-        User user = userRepository.findByUsernameOrEmail(loginUser.getUsername(), loginUser.getUsername());
+        User user = userRepository.findByNameOrEmail(loginUser.getName(), loginUser.getName());
 
         if (user != null && passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
             return user;
@@ -75,7 +83,7 @@ public class UserController {
 
     @PostMapping("/verify")
     public String verifyUser(@RequestParam String username, @RequestParam String verificationCode) {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByName(username);
 
         if (user != null && verificationCode.equals(user.getVerificationCode())) {
             user.setVerified(true);
@@ -102,7 +110,7 @@ public class UserController {
 
     @PostMapping("/reset-password")
     public void resetPassword(@RequestParam String username, @RequestParam String verificationCode, @RequestParam String newPassword) {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByName(username);
 
         if (user != null && verificationCode.equals(user.getVerificationCode())) {
             user.setPassword(passwordEncoder.encode(newPassword));
@@ -119,19 +127,15 @@ public class UserController {
     }
 
     private void sendVerificationEmail(String email, String verificationCode) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Email Verification");
-        message.setText("Your verification code is: " + verificationCode);
-        mailSender.send(message);
+        String subject ="Verify your account";
+        String text="Your verification code is: " + verificationCode;
+        emailService.sendEmail(email,subject,text);
     }
 
     private void sendResetPasswordEmail(String email, String resetCode) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Reset Password");
-        message.setText("Your reset code is: " + resetCode);
-        mailSender.send(message);
+        String subject ="Reset Password";
+        String text="Your reset code is: " + resetCode;
+        emailService.sendEmail(email,subject,text);
     }
 
 }

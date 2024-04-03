@@ -4,16 +4,25 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
-@Table(name = "clients")
+
+
 @Getter
 @Setter
-public class Client extends User {
-    private String phoneNumber;
-    public Client() {
-    }
+@Entity
+@Table(name = "clients")
+public class Client {
 
-    public Client(User user) {
-        super(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getVerificationCode());
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    public Client(){
+
     }
 }

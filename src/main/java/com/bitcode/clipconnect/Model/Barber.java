@@ -8,14 +8,23 @@ import lombok.Setter;
 @Getter
 @Entity
 @Table(name = "barbers")
-public class Barber extends User {
+public class Barber {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "shop_name", nullable = false, length = 100)
     private String shopName;
 
-    public Barber() {
-    }
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
-    public Barber(User user) {
-        super(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getVerificationCode());
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public Barber(){
 
     }
 
