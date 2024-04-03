@@ -40,7 +40,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.verificationCode = verificationCode;
-        verified=false;
+        this.verified=false;
     }
     public User(){
 

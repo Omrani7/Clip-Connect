@@ -82,9 +82,8 @@ public class UserController {
     }
 
     @PostMapping("/verify")
-    public String verifyUser(@RequestParam String username, @RequestParam String verificationCode) {
-        User user = userRepository.findByName(username);
-
+    public String verifyUser(@RequestParam String email, @RequestParam String verificationCode) {
+        User user = userRepository.findByEmail(email);
         if (user != null && verificationCode.equals(user.getVerificationCode())) {
             user.setVerified(true);
             userRepository.save(user);
@@ -109,8 +108,8 @@ public class UserController {
     }
 
     @PostMapping("/reset-password")
-    public void resetPassword(@RequestParam String username, @RequestParam String verificationCode, @RequestParam String newPassword) {
-        User user = userRepository.findByName(username);
+    public void resetPassword(@RequestParam String email, @RequestParam String verificationCode, @RequestParam String newPassword) {
+        User user = userRepository.findByEmail(email);
 
         if (user != null && verificationCode.equals(user.getVerificationCode())) {
             user.setPassword(passwordEncoder.encode(newPassword));
@@ -127,7 +126,7 @@ public class UserController {
     }
 
     private void sendVerificationEmail(String email, String verificationCode) {
-        String subject ="Verify your account";
+        String subject = "Verify your account";
         String text="Your verification code is: " + verificationCode;
         emailService.sendEmail(email,subject,text);
     }
@@ -137,5 +136,4 @@ public class UserController {
         String text="Your reset code is: " + resetCode;
         emailService.sendEmail(email,subject,text);
     }
-
 }
