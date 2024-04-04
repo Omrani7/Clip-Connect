@@ -1,4 +1,4 @@
-package com.bitcode.clipconnect;
+package com.bitcode.clipconnect.Configuration;
 
 import lombok.Value;
 import org.springframework.context.annotation.Bean;

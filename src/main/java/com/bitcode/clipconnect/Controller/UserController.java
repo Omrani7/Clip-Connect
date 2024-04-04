@@ -16,9 +16,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/users")
 public class UserController {
     @Autowired
@@ -27,7 +30,6 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final BarberRepository barberRepository;
     private final ClientRepository clientRepository;
-    private final MailSender mailSender;
 
     public UserController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
@@ -38,14 +40,16 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
         this.barberRepository = barberRepository;
         this.clientRepository = clientRepository;
-        this.mailSender = mailSender;
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public User registerUser(@RequestBody User user, @RequestParam String role) {
+    public Map<String, Object> registerUser(@RequestBody User user, @RequestParam String role) {
+        Map<String, Object> response = new HashMap<>();
         if (userRepository.existsByName(user.getName())) {
-            throw new RuntimeException("Username already exists");
+            response.put("status", "error");
+            response.put("message", "Username already exists");
+            return response;
         }
 
         String verificationCode = generateVerificationCode();
@@ -53,48 +57,61 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         User savedUser = userRepository.save(user);
-        sendVerificationEmail(savedUser.getEmail(), verificationCode);
+        //sendVerificationEmail(savedUser.getEmail(), verificationCode);
 
         if ("barber".equals(role)) {
             Barber barber = new Barber();
 
             barber.setUser(savedUser);
-            return barberRepository.save(barber).getUser();
+            response.put("status", "success");
+            response.put("data", barberRepository.save(barber).getUser());
         } else if ("client".equals(role)) {
             Client client = new Client();
 
             client.setUser(savedUser);
-            return clientRepository.save(client).getUser();
+            response.put("status", "success");
+            response.put("data", clientRepository.save(client).getUser());
         } else {
-            throw new RuntimeException("Invalid role");
+            response.put("status", "error");
+            response.put("message", "Invalid role");
         }
+        return response;
     }
 
     @PostMapping("/login")
-    public User loginUser(@RequestBody User loginUser) {
+    public Map<String, Object> loginUser(@RequestBody User loginUser) {
+        Map<String, Object> response = new HashMap<>();
         User user = userRepository.findByNameOrEmail(loginUser.getName(), loginUser.getName());
 
         if (user != null && passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
-            return user;
+            response.put("status", "success");
+            response.put("data", user);
         } else {
-            throw new RuntimeException("Invalid username or password");
+            response.put("status", "error");
+            response.put("message", "Invalid username or password");
         }
+        return response;
     }
 
     @PostMapping("/verify")
-    public String verifyUser(@RequestParam String email, @RequestParam String verificationCode) {
+    public Map<String, Object> verifyUser(@RequestParam String email, @RequestParam String verificationCode) {
+        Map<String, Object> response = new HashMap<>();
         User user = userRepository.findByEmail(email);
         if (user != null && verificationCode.equals(user.getVerificationCode())) {
             user.setVerified(true);
             userRepository.save(user);
-            return "User verified successfully";
+            response.put("status", "success");
+            response.put("data", "User verified successfully");
         } else {
-            throw new RuntimeException("Invalid verification code");
+            response.put("status", "error");
+            response.put("message", "Invalid verification code");
         }
+        return response;
     }
 
     @PostMapping("/forgot-password")
-    public void forgotPassword(@RequestParam String email) {
+    public Map<String, Object> forgotPassword(@RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
         User user = userRepository.findByEmail(email);
 
         if (user != null) {
@@ -102,22 +119,31 @@ public class UserController {
             user.setVerificationCode(verificationCode);
             userRepository.save(user);
             sendResetPasswordEmail(email, verificationCode);
+            response.put("status", "success");
+            response.put("data", "Reset password email sent successfully");
         } else {
-            throw new RuntimeException("User not found");
+            response.put("status", "error");
+            response.put("message", "User not found");
         }
+        return response;
     }
 
     @PostMapping("/reset-password")
-    public void resetPassword(@RequestParam String email, @RequestParam String verificationCode, @RequestParam String newPassword) {
+    public Map<String, Object> resetPassword(@RequestParam String email, @RequestParam String verificationCode, @RequestParam String newPassword) {
+        Map<String, Object> response = new HashMap<>();
         User user = userRepository.findByEmail(email);
 
         if (user != null && verificationCode.equals(user.getVerificationCode())) {
             user.setPassword(passwordEncoder.encode(newPassword));
             user.setVerificationCode(null);
             userRepository.save(user);
+            response.put("status", "success");
+            response.put("data", "Password reset successfully");
         } else {
-            throw new RuntimeException("Invalid reset code");
+            response.put("status", "error");
+            response.put("message", "Invalid reset code");
         }
+        return response;
     }
 
     private String generateVerificationCode() {
