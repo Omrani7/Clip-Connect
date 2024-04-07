@@ -57,7 +57,7 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         User savedUser = userRepository.save(user);
-        //sendVerificationEmail(savedUser.getEmail(), verificationCode);
+        sendVerificationEmail(savedUser.getEmail(), verificationCode);
 
         if ("barber".equals(role)) {
             Barber barber = new Barber();
@@ -81,7 +81,7 @@ public class UserController {
     @PostMapping("/login")
     public Map<String, Object> loginUser(@RequestBody User loginUser) {
         Map<String, Object> response = new HashMap<>();
-        User user = userRepository.findByNameOrEmail(loginUser.getName(), loginUser.getName());
+        User user = userRepository.findByNameOrEmail(loginUser.getName(), loginUser.getEmail());
 
         if (user != null && passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
             response.put("status", "success");
@@ -105,6 +105,25 @@ public class UserController {
         } else {
             response.put("status", "error");
             response.put("message", "Invalid verification code");
+        }
+        return response;
+    }
+
+    @PostMapping("/resend-verification-code")
+    public Map<String, Object> resendVerificationCode(@RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
+        User user = userRepository.findByEmail(email);
+
+        if (user != null) {
+            String verificationCode = generateVerificationCode();
+            user.setVerificationCode(verificationCode);
+            userRepository.save(user);
+            sendVerificationEmail(email, verificationCode);
+            response.put("status", "success");
+            response.put("data", "Verification code resent successfully");
+        } else {
+            response.put("status", "error");
+            response.put("message", "User not found");
         }
         return response;
     }
