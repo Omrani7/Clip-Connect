@@ -43,20 +43,4 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(user1, user2, admin);
     }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .authorizeRequests()
-//                .anyRequest().authenticated()
-//                .and()
-//                .formLogin()
-//                .and()
-//                .logout()
-//                .logoutUrl("/logout")
-//                .logoutSuccessUrl("/login")
-//                .deleteCookies("remember-me");
-//
-//        return http.build();
-//    }
-
 }
