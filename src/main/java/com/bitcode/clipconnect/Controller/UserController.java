@@ -84,6 +84,9 @@ public class UserController {
         User user = userRepository.findByNameOrEmail(loginUser.getName(), loginUser.getEmail());
 
         if (user != null && passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
+            if(!user.getVerified()) {
+                resendVerificationCode(user.getEmail(),0);
+            }
             response.put("status", "success");
             response.put("data", user);
         } else {
@@ -110,7 +113,7 @@ public class UserController {
     }
 
     @PostMapping("/resend-verification-code")
-    public Map<String, Object> resendVerificationCode(@RequestParam String email) {
+    public Map<String, Object> resendVerificationCode(@RequestParam String email,@RequestParam int type) {
         Map<String, Object> response = new HashMap<>();
         User user = userRepository.findByEmail(email);
 
@@ -118,7 +121,13 @@ public class UserController {
             String verificationCode = generateVerificationCode();
             user.setVerificationCode(verificationCode);
             userRepository.save(user);
-            sendVerificationEmail(email, verificationCode);
+            if(type==0){
+                sendVerificationEmail(email, verificationCode);
+            }
+            else if(type==1){
+                sendResetPasswordEmail(email, verificationCode);
+            }
+
             response.put("status", "success");
             response.put("data", "Verification code resent successfully");
         } else {
