@@ -16,9 +16,6 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "phone_number", length = 20)
-    private String phoneNumber;
-
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;

@@ -2,6 +2,7 @@ package com.bitcode.clipconnect.Controller;
 
 import com.bitcode.clipconnect.Model.Client;
 import com.bitcode.clipconnect.Repository.ClientRepository;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/clients")
 public class ClientController {
 

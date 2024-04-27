@@ -14,7 +14,7 @@ public class Barber {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "shop_name", nullable = true, length = 100)
+    @Column(name = "shop_name", length = 100)
     private String shopName;
 
     @Column(name = "phone_number", length = 20)
@@ -23,6 +23,9 @@ public class Barber {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "bio")
+    private String bio;
 
     public Barber(){
 

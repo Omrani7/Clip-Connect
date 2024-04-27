@@ -2,6 +2,7 @@ package com.bitcode.clipconnect.Controller;
 
 import com.bitcode.clipconnect.Model.Barber;
 import com.bitcode.clipconnect.Model.Client;
+import com.bitcode.clipconnect.Model.Location;
 import com.bitcode.clipconnect.Model.User;
 import com.bitcode.clipconnect.Repository.BarberRepository;
 import com.bitcode.clipconnect.Repository.ClientRepository;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -189,5 +191,90 @@ public class UserController {
         String subject ="Reset Password";
         String text="Your reset code is: " + resetCode;
         emailService.sendEmail(email,subject,text);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestParam Long userId, @RequestBody User updatedUser) {
+        User existingUser = userRepository.findById(userId).orElse(null);
+
+        if (existingUser == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        if (updatedUser.getEmail() != null) {
+            existingUser.setEmail(updatedUser.getEmail());
+        }
+        if (updatedUser.getName() != null) {
+            existingUser.setName(updatedUser.getName());
+        }
+        if (updatedUser.getPassword() != null) {
+            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+        if (updatedUser.getAvatarUrl() != null) {
+            existingUser.setAvatarUrl(updatedUser.getAvatarUrl());
+        }
+
+        // Save the updated user
+        userRepository.save(existingUser);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("data", "User updated successfully");
+
+        return ResponseEntity.ok(response);
+    }
+    @PutMapping("/updateLocation")
+    public ResponseEntity<?> updateLocation(@RequestParam Long userId, @RequestBody Location location) {
+        User existingUser = userRepository.findById(userId).orElse(null);
+
+        if (existingUser == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Check if the User has a Location entity associated
+        if (existingUser.getLocation() != null) {
+            // Update the existing location object
+            existingUser.getLocation().setLatitude(location.getLatitude());
+            existingUser.getLocation().setLongitude(location.getLongitude());
+        } else {
+            // Create a new Location entity and associate it with the user
+            Location newLocation = new Location();
+            newLocation.setLatitude(location.getLatitude());
+            newLocation.setLongitude(location.getLongitude());
+            existingUser.setLocation(newLocation);
+        }
+
+        // Save the updated user
+        userRepository.save(existingUser);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", "User location updated successfully");
+
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/{userId}/location")
+    public ResponseEntity<?> getLocationByUser(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Location location = user.getLocation();
+        if (location == null) {
+            return ResponseEntity.notFound().build(); // No location found for the user
+        }
+
+        return ResponseEntity.ok(location);
     }
 }

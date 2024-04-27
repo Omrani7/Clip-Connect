@@ -11,5 +11,4 @@ public class ClipconnectApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ClipconnectApplication.class, args);
 	}
-
 }
