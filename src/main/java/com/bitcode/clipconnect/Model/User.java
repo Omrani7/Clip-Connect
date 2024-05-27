@@ -27,21 +27,26 @@ public class User {
     private String verificationCode;
 
     @Column(name = "verified", columnDefinition = "BIT DEFAULT 0")
-    private Boolean verified;
+    private Boolean verified = false;
 
     @Column(name = "avatar_url")
     private String avatarUrl;
 
-    @OneToOne
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role;
+
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "location_id")
     private Location location;
 
-    public User(String name, String email, String password, String verificationCode) {
+    public User(String name, String email, String password, String verificationCode, UserRole role) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.verificationCode = verificationCode;
-        this.verified=false;
+        this.role = role;
+        this.verified = false;
     }
 
     public User() {}

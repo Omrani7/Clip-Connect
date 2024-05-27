@@ -1,20 +1,15 @@
 package com.bitcode.clipconnect.Controller;
 
-import com.bitcode.clipconnect.Model.Barber;
-import com.bitcode.clipconnect.Model.Client;
-import com.bitcode.clipconnect.Model.Location;
-import com.bitcode.clipconnect.Model.User;
+import com.bitcode.clipconnect.Model.*;
 import com.bitcode.clipconnect.Repository.BarberRepository;
 import com.bitcode.clipconnect.Repository.ClientRepository;
 import com.bitcode.clipconnect.Repository.UserRepository;
 import com.bitcode.clipconnect.Service.EmailService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +41,7 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Object> registerUser(@RequestBody User user, @RequestParam String role) {
+    public Map<String, Object> registerUser(@RequestBody User user, @RequestParam UserRole role) {
         Map<String, Object> response = new HashMap<>();
         if (userRepository.existsByName(user.getName())) {
             response.put("status", "error");
@@ -61,13 +56,13 @@ public class UserController {
         User savedUser = userRepository.save(user);
         sendVerificationEmail(savedUser.getEmail(), verificationCode);
 
-        if ("barber".equals(role)) {
+        if (role == UserRole.BARBER) {
             Barber barber = new Barber();
 
             barber.setUser(savedUser);
             response.put("status", "success");
             response.put("data", barberRepository.save(barber).getUser());
-        } else if ("client".equals(role)) {
+        } else if (role == UserRole.CLIENT) {
             Client client = new Client();
 
             client.setUser(savedUser);
@@ -80,20 +75,32 @@ public class UserController {
         return response;
     }
 
+
+    @Transactional
     @PostMapping("/login")
     public Map<String, Object> loginUser(@RequestBody User loginUser) {
         Map<String, Object> response = new HashMap<>();
         User user = userRepository.findByNameOrEmail(loginUser.getName(), loginUser.getEmail());
 
-        if (user != null && passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
-            if(!user.getVerified()) {
-                resendVerificationCode(user.getEmail(),0);
+        if (user == null) {
+            response.put("status", "error");
+            response.put("message", "Invalid username or email");
+        } else if (!passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
+            response.put("status", "error");
+            response.put("message", "Invalid password");
+        } else {
+            if (!user.getVerified()) {
+                resendVerificationCode(user.getEmail(), 0);
+            }
+            if(user.getRole()==UserRole.CLIENT){
+                Client client = clientRepository.findByUserId(user.getId());
+                response.put("data", client);
+            }else{
+                Barber barber = barberRepository.findByUserId(user.getId());
+                response.put("data", barber);
             }
             response.put("status", "success");
-            response.put("data", user);
-        } else {
-            response.put("status", "error");
-            response.put("message", "Invalid username or password");
+            System.out.println(user.getId());
         }
         return response;
     }
@@ -237,20 +244,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        // Check if the User has a Location entity associated
-        if (existingUser.getLocation() != null) {
+        // Get the user's current location
+        Location userLocation = existingUser.getLocation();
+
+        if (userLocation != null) {
             // Update the existing location object
-            existingUser.getLocation().setLatitude(location.getLatitude());
-            existingUser.getLocation().setLongitude(location.getLongitude());
+            userLocation.setLatitude(location.getLatitude());
+            userLocation.setLongitude(location.getLongitude());
         } else {
             // Create a new Location entity and associate it with the user
             Location newLocation = new Location();
             newLocation.setLatitude(location.getLatitude());
             newLocation.setLongitude(location.getLongitude());
-            existingUser.setLocation(newLocation);
+            existingUser.setLocation(newLocation); // Associate location with the user
         }
 
-        // Save the updated user
+        // Save the user (which will also cascade to save the location if necessary)
         userRepository.save(existingUser);
 
         Map<String, Object> response = new HashMap<>();
@@ -259,6 +268,7 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/{userId}/location")
     public ResponseEntity<?> getLocationByUser(@PathVariable Long userId) {
         User user = userRepository.findById(userId).orElse(null);

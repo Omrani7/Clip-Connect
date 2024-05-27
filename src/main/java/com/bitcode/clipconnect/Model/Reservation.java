@@ -4,21 +4,17 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "reviews")
-public class Review {
+@Table(name = "reservations")
+public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "rating", nullable = false)
-    private int rating;
-
-    @Column(name = "comment", columnDefinition = "TEXT")
-    private String comment;
 
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
@@ -28,6 +24,12 @@ public class Review {
     @JoinColumn(name = "barber_id", nullable = false)
     private Barber barber;
 
-    public Review() {}
+    @Column(name = "reservation_date", nullable = false)
+    private LocalDateTime date;
 
+    @Column(name = "expired", columnDefinition = "BIT DEFAULT 0", nullable = false)
+    private Boolean expired = false;
+
+    public Reservation() {
+    }
 }

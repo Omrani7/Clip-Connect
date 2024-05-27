@@ -1,5 +1,6 @@
 package com.bitcode.clipconnect.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,11 @@ public class Barber {
     @Column(name = "bio")
     private String bio;
 
+    @Column(name = "is_set", columnDefinition = "BIT DEFAULT 0")
+    private Boolean isSet = false;
+
+    @Column(name = "busy", columnDefinition = "BIT DEFAULT 0")
+    private Boolean busy = false;
     public Barber(){
 
     }
